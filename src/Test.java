@@ -31,11 +31,8 @@ public class Test implements Runnable{
     public void run() {
 
         int number = 1;
-        System.out.println("In run method of Test.");
 
         while(market.getOpen()) {
-
-            System.out.println("hello");
 
             try {
                 //Sleep between 2 and 15 minutes.

@@ -2,7 +2,6 @@ import java.io.*;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Market extends Thread {
 
@@ -10,8 +9,26 @@ public class Market extends Thread {
     private DateTimeFormatter dtf;
     private boolean open;
     private ArrayList<Product> products;
+    private int income;
+    //It wasn't mentioned how many cashiers there are so i chose 3.
+    //private Cashier cashier1, cashier2, cashier3;
+    private Cashier[] cashiers;
 
     public Market() {
+
+        cashiers = new Cashier[3];
+
+        cashiers[0] = new Cashier(this);
+        cashiers[1] = new Cashier(this);
+        cashiers[2] = new Cashier(this);
+
+        /*cashier1 = new Cashier(this);
+
+        cashier2 = new Cashier(this);
+
+        cashier3 = new Cashier(this);*/
+
+        income = 0;
 
         open = true;
 
@@ -20,8 +37,6 @@ public class Market extends Thread {
 
         //Set date formatter.
         dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
-
-        //TODO Get all products here.
 
         //Getting dynamic location of the file using class location.
         InputStream bufferedInputStream = Thread.currentThread().getContextClassLoader()
@@ -34,7 +49,7 @@ public class Market extends Thread {
         String line;
         try {
 
-            //Readline once so i skip the "ProductID Price" line.
+            //readline once so i skip the "ProductID Price" line.
             bufferedReader.readLine();
 
             while ((line = bufferedReader.readLine()) != null){
@@ -46,8 +61,6 @@ public class Market extends Thread {
 
             }
 
-            System.out.println(products.get(1000).toString());
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -55,16 +68,28 @@ public class Market extends Thread {
 
     }
 
+    public Cashier[] getCashiers() {
+        return cashiers;
+    }
+
     public Boolean getOpen() {
-
         return open;
+    }
 
+    public int getIncome() {
+        return income;
+    }
+
+    public void setIncome(int income) {
+        this.income = income;
     }
 
     public LocalTime getLocalTime() {
-
         return localTime;
+    }
 
+    public ArrayList<Product> getProducts() {
+        return products;
     }
 
     @Override
