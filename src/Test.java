@@ -13,7 +13,7 @@ public class Test implements Runnable{
         if (market.getOpen()) {
 
             customers.add(new Customer(market, "Customer" + number));
-            customers.get(number - 1).start();
+            new Thread(customers.get(number - 1)).start();
 
 
         }
@@ -36,8 +36,8 @@ public class Test implements Runnable{
 
             try {
                 //Sleep between 2 and 15 minutes.
-                //Thread.sleep(rng.nextInt(13*60*1000) + 2*60*1000);
-                Thread.sleep(rng.nextInt(13*1000) + 2*1000);
+                Thread.sleep(rng.nextInt(13*60*1000) + 2*60*1000);
+                //Thread.sleep(rng.nextInt(13*1000) + 2*1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

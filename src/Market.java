@@ -10,23 +10,21 @@ public class Market extends Thread {
     private boolean open;
     private ArrayList<Product> products;
     private int income;
-    //It wasn't mentioned how many cashiers there are so i chose 3.
-    //private Cashier cashier1, cashier2, cashier3;
+    private int randomAvgWaitingTime;
+    private int shortAvgWaitingTime;
     private Cashier[] cashiers;
 
     public Market() {
 
+        //It wasn't mentioned how many cashiers there are so i chose 3.
         cashiers = new Cashier[3];
 
-        cashiers[0] = new Cashier(this);
-        cashiers[1] = new Cashier(this);
-        cashiers[2] = new Cashier(this);
+        cashiers[0] = new Cashier(this, 1);
+        cashiers[1] = new Cashier(this, 2);
+        cashiers[2] = new Cashier(this, 3);
 
-        /*cashier1 = new Cashier(this);
-
-        cashier2 = new Cashier(this);
-
-        cashier3 = new Cashier(this);*/
+        randomAvgWaitingTime = 0;
+        shortAvgWaitingTime = 0;
 
         income = 0;
 
@@ -65,7 +63,18 @@ public class Market extends Thread {
             e.printStackTrace();
         }
 
+        for (Cashier cashier : cashiers) {
+            cashier.start();
+        }
 
+    }
+
+    public void setRandomAvgWaitingTime(int randomAvgWaitingTime) {
+        this.randomAvgWaitingTime = randomAvgWaitingTime;
+    }
+
+    public void setShortAvgWaitingTime(int shortAvgWaitingTime) {
+        this.shortAvgWaitingTime = shortAvgWaitingTime;
     }
 
     public Cashier[] getCashiers() {
@@ -106,7 +115,7 @@ public class Market extends Thread {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            //TODO Change open to false after 17:00:00
+            //TODO Change open to false after 17:00:00 and print average waiting times.
         }
     }
 }
