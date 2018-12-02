@@ -9,98 +9,79 @@ public class Cashier extends Thread {
     private Market market;
     private int queueNumber;
     private Boolean isEmpty;
-    private ArrayList<Customer> customers;
-    //TODO customers array list to customersInQueue array list and use customers array list for avg time calculations.
+    //Arraylist is good here for a queue. I can just use the first index and remove the first index when the customer
+    //is done since Arraylist automatically will bring the second index to first one after the first one is deleted.
+    private ArrayList<Customer> customersInQueue;
 
     public Cashier(Market market, int queueNumber) {
 
         this.market = market;
         isEmpty = true;
         this.queueNumber = queueNumber;
-        customers = new ArrayList<>();
+        customersInQueue = new ArrayList<>();
 
     }
 
-    public ArrayList<Customer> getCustomers() {
-        return customers;
+    public ArrayList<Customer> getcustomersInQueue() {
+        return customersInQueue;
     }
 
     public int getQueueNumber() {
         return queueNumber;
     }
 
+    //Synchronized so that it's thread-safe
     synchronized public void addIncome(int money) {
 
         market.setIncome(market.getIncome() + money);
 
     }
 
-    public void averageWaitingTime() {
-
-        int randomCount = 0;
-        int shortestCount = 0;
-        int randomWaitingTime = 0;
-        int shortestWaitingTime = 0;
-
-        for (Customer customer : customers) {
-            //TODO Do the calculations using timeSpentWaiting
-            if (customer.getPickedQueue().equals("Random")) {
-
-                randomCount++;
-                randomWaitingTime += 1;
-
-            } else if (customer.getPickedQueue().equals("Shortest")) {
-
-                shortestCount++;
-                shortestWaitingTime += 1;
-
-            }
-        }
-
-        int randomAvgWaitingTime = randomWaitingTime / randomCount;
-        int shortAvgWaitingTime = shortestWaitingTime / shortestCount;
-
-        market.setRandomAvgWaitingTime(randomAvgWaitingTime);
-        market.setShortAvgWaitingTime(shortAvgWaitingTime);
-
-
-    }
-
     @Override
     public void run() {
+        //Run while market is open.
         while (market.getOpen()) {
             try{
                 sleep(1000);
             }catch (Exception e){
                 e.printStackTrace();
             }
-
-            if (customers.size() != 0) {
-                long minutesWaited = customers.get(0).getQueueEntranceTime().until(market.getLocalTime(), MINUTES);
-                long secondsWaited = customers.get(0).getQueueEntranceTime().until(market.getLocalTime(), SECONDS) % 60;
-                //TODO calculate time waited and add it using customers arrayList.
-                System.out.println(customers.get(0).getName() + " waited for " + minutesWaited + " minutes and " +
-                        secondsWaited + " seconds in queue" + queueNumber);
+            //If there are customers in queue:
+            if (customersInQueue.size() != 0) {
+                //Calculate waited time by using queue entrance time and current time.
+                long minutesWaited = customersInQueue.get(0).getQueueEntranceTime()
+                        .until(market.getLocalTime(), MINUTES);
+                long secondsWaited = customersInQueue.get(0).getQueueEntranceTime()
+                        .until(market.getLocalTime(), SECONDS) % 60;
+                //Setting time waited in queue for finding the average time waited.
+                customersInQueue.get(0).setTimeSpentWaiting(minutesWaited * 60 + secondsWaited);
+                System.out.println(customersInQueue.get(0).getName() + " waited for " + minutesWaited + " minutes and "
+                        + secondsWaited + " seconds in queue" + queueNumber);
 
                 int money = 0;
                 int sleep = 0;
 
-                for (Map.Entry<Product, Integer> entry : customers.get(0).getChosenProducts().entrySet()) {
+                //Calculate the money and time for Thread to sleep(Items processing by cashier) by using Map.Entry to
+                //loop through HashMap.
+                for (Map.Entry<Product, Integer> entry : customersInQueue.get(0).getChosenProducts().entrySet()) {
                     money += entry.getValue() * entry.getKey().getPrice();
                     sleep += entry.getValue();
                 }
 
-                System.out.println(customers.get(0).getName() + " items are processed in " + sleep / 60
-                        + " minutes and " + sleep % 60 + " seconds");
                 try {
-                    //Thread.sleep(1000*sleep);
-                    Thread.sleep(1000);
+                    Thread.sleep(1000*sleep);
+                    //Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
-                System.out.println(customers.get(0).getName() + " paid $" + money + " and left at " + market.getLocalTime().toString());
-                customers.remove(0);
+                System.out.println(customersInQueue.get(0).getName() + " items are processed in " + sleep / 60
+                        + " minutes and " + sleep % 60 + " seconds");
+
+                System.out.println(customersInQueue.get(0).getName() + " paid $" + money + " and left at "
+                        + market.getLocalTime().toString());
+
+                customersInQueue.remove(0);
                 addIncome(money);
                 System.out.println("Total income = $" + market.getIncome());
             } else {

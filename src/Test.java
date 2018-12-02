@@ -1,19 +1,19 @@
-import java.util.ArrayList;
 import java.util.Random;
 
+//This is the Test class to create Market and customers. Cashiers and Products are created in Market.
+//Some commented lines are for test purposes.
 public class Test implements Runnable{
 
     private static Market market;
     private Random rng = new Random();
-    private ArrayList<Customer> customers = new ArrayList<>();
 
     private void createCustomers(int number) {
 
         //Check if market is open. If it's open create a customer and add it to array list to start running it.
         if (market.getOpen()) {
 
-            customers.add(new Customer(market, "Customer" + number));
-            new Thread(customers.get(number - 1)).start();
+            market.getCustomers().add(new Customer(market, "Customer" + number));
+            new Thread(market.getCustomers().get(number - 1)).start();
 
 
         }

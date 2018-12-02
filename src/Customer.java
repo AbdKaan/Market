@@ -9,7 +9,7 @@ public class Customer implements Runnable{
     private String name;
     private int choosingTime;
     private LocalTime queueEntranceTime;
-    private int timeSpentWaiting;
+    private long timeSpentWaiting;
     private Random rng;
     private Cashier cashier;
     private String pickedQueue;
@@ -21,11 +21,20 @@ public class Customer implements Runnable{
         this.name = name;
         this.market = market;
         rng = new Random();
-        //choosingTime = rng.nextInt(28*60*1000) + 2*60*1000;
-        choosingTime = rng.nextInt(13*1000) + 2*1000;
+        choosingTime = rng.nextInt(28*60*1000) + 2*60*1000;
+        //choosingTime = rng.nextInt(13*1000) + 2*1000;
         queueEntranceTime = market.getLocalTime();
         timeSpentWaiting = 0;
+        pickedQueue = "Empty";
 
+    }
+
+    public long getTimeSpentWaiting() {
+        return timeSpentWaiting;
+    }
+
+    public void setTimeSpentWaiting(long timeSpentWaiting) {
+        this.timeSpentWaiting = timeSpentWaiting;
     }
 
     public HashMap<Product, Integer> getChosenProducts() {
@@ -62,16 +71,16 @@ public class Customer implements Runnable{
             pickedQueue = "Shortest";
         } else {//50% chance to pick shortest queue.
             pickedQueue = "Random";
-            int cashier1 = market.getCashiers()[0].getCustomers().size();
-            int cashier2 = market.getCashiers()[1].getCustomers().size();
-            int cashier3 = market.getCashiers()[2].getCustomers().size();
+            int cashier1 = market.getCashiers()[0].getcustomersInQueue().size();
+            int cashier2 = market.getCashiers()[1].getcustomersInQueue().size();
+            int cashier3 = market.getCashiers()[2].getcustomersInQueue().size();
             if (cashier1 > cashier2 && cashier1 > cashier3)
                 cashier = market.getCashiers()[0];
             else if (cashier2 > cashier1 && cashier2 > cashier3)
                 cashier = market.getCashiers()[1];
             else if (cashier3 > cashier2 && cashier3 > cashier1)
                 cashier = market.getCashiers()[2];
-            else //All have same amount of customers so i choose randomly.
+            else //All have same amount of customersInQueue so i choose randomly.
                 cashier = market.getCashiers()[rng.nextInt(3)];
 
         }
@@ -93,7 +102,7 @@ public class Customer implements Runnable{
             chosenProducts.put(market.getProducts().get(rng.nextInt(1000) + 1), rng.nextInt(20) + 1);
 
         pickCashier();
-        cashier.getCustomers().add(this);
+        cashier.getcustomersInQueue().add(this);
         System.out.println(name + " entered queue" + cashier.getQueueNumber() + " at " + market.getLocalTime().toString());
 
 

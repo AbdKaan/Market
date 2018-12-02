@@ -1,18 +1,19 @@
 import java.io.*;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class Market extends Thread {
 
     private LocalTime localTime;
-    private DateTimeFormatter dtf;
     private boolean open;
+
     private ArrayList<Product> products;
+    private Cashier[] cashiers;
+    private ArrayList<Customer> customers;
+
     private int income;
     private int randomAvgWaitingTime;
     private int shortAvgWaitingTime;
-    private Cashier[] cashiers;
 
     public Market() {
 
@@ -23,6 +24,8 @@ public class Market extends Thread {
         cashiers[1] = new Cashier(this, 2);
         cashiers[2] = new Cashier(this, 3);
 
+        customers = new ArrayList<>();
+
         randomAvgWaitingTime = 0;
         shortAvgWaitingTime = 0;
 
@@ -32,9 +35,6 @@ public class Market extends Thread {
 
         //Set time.
         localTime = LocalTime.of(9,0,0);
-
-        //Set date formatter.
-        dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
 
         //Getting dynamic location of the file using class location.
         InputStream bufferedInputStream = Thread.currentThread().getContextClassLoader()
@@ -69,12 +69,8 @@ public class Market extends Thread {
 
     }
 
-    public void setRandomAvgWaitingTime(int randomAvgWaitingTime) {
-        this.randomAvgWaitingTime = randomAvgWaitingTime;
-    }
-
-    public void setShortAvgWaitingTime(int shortAvgWaitingTime) {
-        this.shortAvgWaitingTime = shortAvgWaitingTime;
+    public ArrayList<Customer> getCustomers() {
+        return customers;
     }
 
     public Cashier[] getCashiers() {
@@ -101,21 +97,98 @@ public class Market extends Thread {
         return products;
     }
 
+    //Find both average waiting times by using this method.
+    public void calculateAverageWaitingTimes() {
+
+        int randomCount = 0;
+        int shortestCount = 0;
+        int randomWaitingTime = 0;
+        int shortestWaitingTime = 0;
+
+        //Calculate avg times by checking if customer was on random or shortest and taking avg of the them.
+
+        for (Customer customer : customers) {
+
+            if (customer.getPickedQueue().equals("Random")) {
+
+                randomCount++;
+                randomWaitingTime += customer.getTimeSpentWaiting();
+
+            } else if (customer.getPickedQueue().equals("Shortest")) {
+
+                shortestCount++;
+                shortestWaitingTime += customer.getTimeSpentWaiting();
+
+            }
+        }
+
+        int randomAvgWaitingTime = randomWaitingTime / randomCount;
+        int shortAvgWaitingTime = shortestWaitingTime / shortestCount;
+
+        this.randomAvgWaitingTime = randomAvgWaitingTime;
+        this.shortAvgWaitingTime = shortAvgWaitingTime;
+
+    }
+
     @Override
     public void run() {
 
         System.out.println("Market is open!");
+        LocalTime closeUp = LocalTime.of(17,0,0);
+        //LocalTime test = LocalTime.of(9,5,0);
 
         while (open) {
 
-            //System.out.println(localTime.format(dtf));
             localTime = localTime.plusSeconds(1);
             try {
                 sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            //TODO Change open to false after 17:00:00 and print average waiting times.
+
+            /*if (localTime.isAfter(test)) {
+
+                calculateAverageWaitingTimes();
+
+                System.out.println("Average waiting time of the customers who select\n" +
+                        "the shortest queue: " + shortAvgWaitingTime + " seconds.");
+
+                System.out.println("Average waiting time of the customers\n" +
+                        "who select their queue randomly: " + randomAvgWaitingTime + " seconds.");
+
+            }*/
+
+            //When it's 17:00:00, change the open to false so we get out of loop.
+            if (localTime.equals(closeUp)) {
+
+                open = false;
+
+            }
         }
+
+        //Time goes on until there are no customers left.
+        while (cashiers[0].getcustomersInQueue().size() > 0 && cashiers[1].getcustomersInQueue().size() > 0
+                && cashiers[2].getcustomersInQueue().size() > 0) {
+
+            localTime = localTime.plusSeconds(1);
+            try {
+                sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        System.out.println("Market closed.");
+
+        //Calculating and printing average time waited in queue.
+        calculateAverageWaitingTimes();
+
+        System.out.println("Average waiting time of the customers who select\n" +
+                "the shortest queue: " + shortAvgWaitingTime + " seconds.");
+
+        System.out.println("Average waiting time of the customers\n" +
+                "who select their queue randomly " + randomAvgWaitingTime + " seconds.");
+
     }
 }
